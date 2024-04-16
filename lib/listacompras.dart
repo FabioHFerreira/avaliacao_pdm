@@ -6,13 +6,12 @@ class PaginaListaCompras extends StatefulWidget {
 }
 
 class _PaginaListaComprasState extends State<PaginaListaCompras> {
-  List<ListaCompras> _listasCompras = [
-    ListaCompras(nome: 'Lista de Compras 1', itens: []),
-    ListaCompras(nome: 'Lista de Compras 2', itens: []),
-  ];
+  List<ListaCompras> _listasCompras = [];
 
   TextEditingController _controladorNovoNomeLista = TextEditingController();
   TextEditingController _controladorPesquisa = TextEditingController();
+  TextEditingController _controladorNovoItemNome = TextEditingController();
+  TextEditingController _controladorNovoItemQuantidade = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -38,51 +37,12 @@ class _PaginaListaComprasState extends State<PaginaListaCompras> {
           Expanded(
             child: ListView.builder(
               itemCount: _listasCompras.length,
-              itemBuilder: (context, indice) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _listasCompras[indice].nome,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: _listasCompras[indice].itens.length,
-                      itemBuilder: (context, indiceItem) {
-                        return ListTile(
-                          title: Text(_listasCompras[indice]
-                              .itens[indiceItem]
-                              .nome),
-                          subtitle: Text(_listasCompras[indice]
-                              .itens[indiceItem]
-                              .quantidade),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.edit),
-                                onPressed: () {
-                                  _editarItem(indice, indiceItem);
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.delete),
-                                onPressed: () {
-                                  _removerItem(indice, indiceItem);
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    Divider(),
-                  ],
+              itemBuilder: (context, indiceLista) {
+                return ListTile(
+                  title: Text(_listasCompras[indiceLista].nome),
+                  onTap: () {
+                    _mostrarOpcoesLista(indiceLista);
+                  },
                 );
               },
             ),
@@ -96,17 +56,6 @@ class _PaginaListaComprasState extends State<PaginaListaCompras> {
         child: Icon(Icons.add),
       ),
     );
-  }
-
-  void _editarItem(int indiceLista, int indiceItem) {
-    // Implemente a lógica de edição do item aqui
-    print('Editar item ${_listasCompras[indiceLista].itens[indiceItem].nome}');
-  }
-
-  void _removerItem(int indiceLista, int indiceItem) {
-    setState(() {
-      _listasCompras[indiceLista].itens.removeAt(indiceItem);
-    });
   }
 
   void _mostrarDialogoNovaLista(BuildContext context) {
@@ -142,10 +91,134 @@ class _PaginaListaComprasState extends State<PaginaListaCompras> {
       },
     );
   }
+
+  void _mostrarOpcoesLista(int indiceLista) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(_listasCompras[indiceLista].nome),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextButton(
+                onPressed: () {
+                  _mostrarDialogoEditarLista(context, indiceLista);
+                },
+                child: Text('Editar Lista'),
+              ),
+              TextButton(
+                onPressed: () {
+                  _mostrarDialogoAdicionarItem(indiceLista);
+                  Navigator.pop(context);
+                },
+                child: Text('Adicionar Item'),
+              ),
+              TextButton(
+                onPressed: () {
+                  _removerLista(indiceLista);
+                  Navigator.pop(context);
+                },
+                child: Text('Excluir Lista'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _mostrarDialogoEditarLista(BuildContext context, int indiceLista) {
+    TextEditingController controladorNomeLista =
+        TextEditingController(text: _listasCompras[indiceLista].nome);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Editar Lista de Compras'),
+          content: TextField(
+            controller: controladorNomeLista,
+            decoration: InputDecoration(labelText: 'Novo Nome da Lista'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _listasCompras[indiceLista] = ListaCompras(nome: controladorNomeLista.text, itens: _listasCompras[indiceLista].itens);
+                });
+                Navigator.pop(context);
+              },
+              child: Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _mostrarDialogoAdicionarItem(int indiceLista) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Adicionar Item'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _controladorNovoItemNome,
+                decoration: InputDecoration(labelText: 'Nome do Item'),
+              ),
+              TextField(
+                controller: _controladorNovoItemQuantidade,
+                decoration: InputDecoration(labelText: 'Quantidade'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _listasCompras[indiceLista].itens.add(
+                      ItemListaCompras(
+                        nome: _controladorNovoItemNome.text,
+                        quantidade: _controladorNovoItemQuantidade.text,
+                      ),
+                    );
+                  });
+                  Navigator.pop(context);
+                },
+                child: Text('Adicionar'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancelar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _removerLista(int indiceLista) {
+    setState(() {
+      _listasCompras.removeAt(indiceLista);
+    });
+  }
 }
 
 class ListaCompras {
-  final String nome;
+  String nome;
   List<ItemListaCompras> itens;
 
   ListaCompras({required this.nome, required this.itens});
@@ -157,4 +230,3 @@ class ItemListaCompras {
 
   ItemListaCompras({required this.nome, required this.quantidade});
 }
-

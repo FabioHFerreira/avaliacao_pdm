@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:avaliacao_pdm/listacompras.dart';
 import 'package:avaliacao_pdm/login.dart';
+import 'package:avaliacao_pdm/sobre.dart';
 
 void main() {
   runApp(Aplicativo());

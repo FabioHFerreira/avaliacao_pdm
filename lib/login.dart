@@ -38,7 +38,18 @@ class PaginaLogin extends StatelessWidget {
                 Spacer(),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/listaCompras');
+                    // Verifica se os campos de email e senha estão preenchidos
+                    if (_controladorEmail.text.isNotEmpty && _controladorSenha.text.isNotEmpty) {
+                      // Se os campos estiverem preenchidos, faz a navegação para a próxima página
+                      Navigator.pushReplacementNamed(context, '/listaCompras');
+                    } else {
+                      // Caso contrário, exibe uma mensagem de erro
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Por favor, preencha todos os campos.'),
+                        ),
+                      );
+                    }
                   },
                   child: Text('Login'),
                 ),
@@ -105,4 +116,3 @@ class PaginaLogin extends StatelessWidget {
     );
   }
 }
-
